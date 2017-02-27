@@ -64,7 +64,8 @@ DSK6713_AIC23_CodecHandle H_Codec;
 void init_hardware(void);     
 void init_HWI(void);  
 void ISR_AIC (void);
-Int16 non_circ_FIR(void);  
+void shift_sample(void);
+Int16 direct_1_iir(void);  
 
 /****************************Main Routines****************************/
 void main(){      
@@ -114,8 +115,18 @@ void ISR_AIC (void)
 {
 	//Reads in a value from the codec
 	double sample_in = (double)mono_read_16Bit();	
-	int i;
+	//Shift samples
+	shift_sample();
+	//Set output y[0]
+	y[0] = direct_1_iir();
+	//writes the output sample of the filtered signal to the DAC
+	mono_write_16Bit(y[0]);	
+}
+
+//Shift samples
+void shift_sample(void){
 	//Shifts each value in the x buffer back by 1
+	int i;
 	for (i = M-1;i>0;i--)
 	{
 		x[i]=x[i-1]; 
@@ -123,14 +134,11 @@ void ISR_AIC (void)
 	//Adds the latest sample to the buffer
 	x[0] = sample_in; 
 	//Shifts each value in the y buffer back by 1
-	for (i = N-1;i>0;i--)
+	int j;
+	for (j = N-1;j>0;i--)
 	{
-		y[i]=y[i-1]; 
+		y[j]=y[j-1]; 
 	}
-	//Set output y t
-	y[0] = direct_1_iir();
-	//writes the output sample of the filtered signal to the DAC
-	mono_write_16Bit(direct_1_iir());	
 }
 
 Int16 direct_1_iir(void){
