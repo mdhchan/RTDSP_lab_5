@@ -29,8 +29,10 @@
 // Some functions to help with writing/reading the audio ports when using interrupts.
 #include <helper_functions_ISR.h>
 // include the FIR coefficients from MATLAB, N is defined in the text file
-#include "FIR_coeff.txt"
+#include "IIR_coeff_LPF.txt"
 
+#define M 2
+#define N 2
 // array of input values and M-1 past inputs
 double x[M] = {0};
 // array of output values and N-1 past inputs
@@ -57,6 +59,7 @@ DSK6713_AIC23_Config Config = { \
 /**********************************************************/
 };
 
+
 // Codec handle:- a variable used to identify audio interface  
 DSK6713_AIC23_CodecHandle H_Codec;
 
@@ -64,50 +67,51 @@ DSK6713_AIC23_CodecHandle H_Codec;
 void init_hardware(void);     
 void init_HWI(void);  
 void ISR_AIC (void);
-void shift_sample(void);
-Int16 direct_1_iir(void);  
+void shift_sample(double sample_in);
+void direct_1_iir(void);  
 
-/****************************Main Routines****************************/
+/********************************** Main routine ************************************/
 void main(){      
-	// initialize board and the audio port
-	init_hardware();
-	/* initialize hardware interrupts */
-	init_HWI();
-	/* loop indefinitely, waiting for interrupts */  					
-	while(1) 
-	{};  
+    // initialize board and the audio port
+    init_hardware();
+    /* initialize hardware interrupts */
+    init_HWI();
+    /* loop indefinitely, waiting for interrupts */              
+    while(1) 
+    {};  
 }
-        
-/****************************init_hardware()****************************/
+       
+/********************************** init_hardware() **********************************/  
 void init_hardware()
 {
-	// Initialize the board support library, must be called first 
-	DSK6713_init();
-	// Start the AIC23 codec using the settings defined above in config 
-	H_Codec = DSK6713_AIC23_openCodec(0, &Config);
+    // Initialize the board support library, must be called first 
+    DSK6713_init();
+   // Start the AIC23 codec using the settings defined above in config 
+   H_Codec = DSK6713_AIC23_openCodec(0, &Config);
 
-	/* Function below sets the number of bits in word used by MSBSP (serial port) for receiving from AIC23 (audio port). We are using a 32 bit packet containing two 16 bit numbers hence 32BIT is set for  receive */
-	MCBSP_FSETS(RCR1, RWDLEN1, 32BIT);	
+    /* Function below sets the number of bits in word used by MSBSP (serial port) for 
+    receives from AIC23 (audio port). We are using a 32 bit packet containing two 
+    16 bit numbers hence 32BIT is set for  receive */
+    MCBSP_FSETS(RCR1, RWDLEN1, 32BIT);    
 
-	/* Configures interrupt to activate on each consecutive available 32 bits 
-	from Audio port hence an interrupt is generated for each L & R sample pair */	
-	MCBSP_FSETS(SPCR1, RINTM, FRM);
+    /* Configures interrupt to activate on each consecutive available 32 bits 
+    from Audio port hence an interrupt is generated for each L & R sample pair */    
+    MCBSP_FSETS(SPCR1, RINTM, FRM);
 
-	/* These commands do the same thing as above but applied to data transfers to  
-	the audio port */
-	MCBSP_FSETS(XCR1, XWDLEN1, 32BIT);	
-	MCBSP_FSETS(SPCR1, XINTM, FRM);	
+    /* These commands do the same thing as above but applied to data transfers to  
+    the audio port */
+    MCBSP_FSETS(XCR1, XWDLEN1, 32BIT);    
+    MCBSP_FSETS(SPCR1, XINTM, FRM);    
 }
 
-/****************************init_HWI()****************************/
+/********************************** init_HWI() **************************************/  
 void init_HWI(void)
 {
-	IRQ_globalDisable();		// Globally disables interrupts
-	IRQ_nmiEnable();	// Enables the NMI interrupt (used by the debugger)
-    	//XINT1 maps to the MCSP_1_Transmit Event
-	IRQ_map(IRQ_EVT_XINT1,4);	// Maps an event to a physical interrupt
-	IRQ_enable(IRQ_EVT_XINT1);	// Enables the event
-	IRQ_globalEnable();		// Globally enables interrupts	
+    IRQ_globalDisable();            // Globally disables interrupts
+    IRQ_nmiEnable();                // Enables the NMI interrupt (used by the debugger)
+    IRQ_map(IRQ_EVT_RINT1,4);        // Maps an event to a physical interrupt
+    IRQ_enable(IRQ_EVT_RINT1);        // Enables the event
+    IRQ_globalEnable();                // Globally enables interrupts
 } 
 /****************WRITE YOUR INTERRUPT SERVICE ROUTINE HERE*********************/
 
@@ -115,18 +119,17 @@ void ISR_AIC (void)
 {
 	//Reads in a value from the codec
 	double sample_in = (double)mono_read_16Bit();	
-	//Shift samples
-	shift_sample();
-	//Set output y[0]
-	y[0] = direct_1_iir();
+	//Shift samples and perform convolution
+	shift_sample(sample_in);
+	direct_1_iir();
 	//writes the output sample of the filtered signal to the DAC
 	mono_write_16Bit(y[0]);	
 }
 
 //Shift samples
-void shift_sample(void){
+void shift_sample(double sample_in){
 	//Shifts each value in the x buffer back by 1
-	int i;
+	int i, j;
 	for (i = M-1;i>0;i--)
 	{
 		x[i]=x[i-1]; 
@@ -134,26 +137,26 @@ void shift_sample(void){
 	//Adds the latest sample to the buffer
 	x[0] = sample_in; 
 	//Shifts each value in the y buffer back by 1
-	int j;
+	
 	for (j = N-1;j>0;i--)
 	{
 		y[j]=y[j-1]; 
 	}
 }
 
-Int16 direct_1_iir(void){
+void direct_1_iir(void){
 	//implements convolution of the input signal with the filter's coefficients
 	//Set y_0 to 0 first
 	double y_0 = 0;
 	//implement x difference equation
-	int i;
+	int i, j;
 	for(i = 0;i<M;i++){
 		y_0 += x[i]*b[i];
 	}
 	//implement y difference equation
-	int j;
+	
 	for(j = 1;j<N;j++){
 		y_0 -= y[j]*a[j];
 	}
-	return (Int16)y_0;
+	y[0] = (Int16)y_0;
 }
