@@ -1,13 +1,13 @@
 void ISR_AIC(void){
 	//implements IIR Filter direct form 2 transposed with single buffer
-	//x[index] is the memory array
+	//w[index] is the memory array N is 5 for fourth order filter
 	int index;
 	double y;
-	w[0] = (double)mono_read_16Bit();
-	y = b[0]*w[0] + w[1];
+	double x = (double)mono_read_16Bit();
+	y = b[0]*x + w[1];
 	mono_write_16Bit((Int16)y);
-	for (index = N - 1; index >0; index --){
-		w[index] = b[index]*w[0] - a[index]*y + w[index+1];
+	for (index = 1; index < N-1; index ++){
+		w[index] = b[index]*x - a[index]*y + w[index+1];
 	}
-	w[N] = b[N]*w[0] - a[N]*y;
+	w[N-1] = b[N]*x - a[N]*y;
 }
