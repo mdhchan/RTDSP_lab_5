@@ -1,4 +1,3 @@
-
 /*************************************************************************************
                   DEPARTMENT OF ELECTRICAL AND ELECTRONIC ENGINEERING
                                   IMPERIAL COLLEGE LONDON 
@@ -38,8 +37,11 @@
 #include <helper_functions_ISR.h>
 // include the FIR coefficients from MATLAB, N is defined in the text file
 #include "IIR_coeff.txt"
+
 // declare pointer to array of input values and M-1 past inputs
-double w[N] = {0};
+double *w;
+/* Declare size of coefficients array */
+unsigned int N = sizeof(b)/sizeof(b[0]); //Find order of b coefficients
 
 /******************************* Global declarations ********************************/
 
@@ -70,8 +72,11 @@ DSK6713_AIC23_CodecHandle H_Codec;
 void init_hardware(void);     
 void init_HWI(void);  
 void ISR_AIC (void);    
+void shift_sample(double sample_in);
+void direct_1_iir(void);  
 /********************************** Main routine ************************************/
-void main(){	
+void main(){
+	w = (double *)calloc(N,sizeof(double));
     // initialize board and the audio port
     init_hardware();
     /* initialize hardware interrupts */
