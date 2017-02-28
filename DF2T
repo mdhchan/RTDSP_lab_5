@@ -3,11 +3,11 @@ void ISR_AIC(void){
 	//x[index] is the memory array
 	int index;
 	double y;
-	x[0] = (double)mono_read_16Bit();
-	y = b[0]*x_0 + x[1];
+	w[0] = (double)mono_read_16Bit();
+	y = b[0]*w[0] + w[1];
 	mono_write_16Bit((Int16)y);
 	for (index = 1, index < N; index ++){
-		x[index] = b[index]*x[0] - a[index]*y + x[index+1];
+		w[index] = b[index]*w[0] - a[index]*y + w[index+1];
 	}
-	x[N] = b[N]*x[0] - a[N]*y;
+	w[N] = b[N]*w[0] - a[N]*y;
 }
