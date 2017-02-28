@@ -1,3 +1,4 @@
+
 /*************************************************************************************
                   DEPARTMENT OF ELECTRICAL AND ELECTRONIC ENGINEERING
                                   IMPERIAL COLLEGE LONDON 
@@ -37,14 +38,10 @@
 #include <helper_functions_ISR.h>
 // include the FIR coefficients from MATLAB, N is defined in the text file
 #include "IIR_coeff.txt"
-
 // declare pointer to array of input values and M-1 past inputs
-double *x;
+double x[N] = {0};
 // declare pointer to array of input values and N-1 past inputs
-double *y;
-/* Declare size of coefficients array */
-unsigned const int M = sizeof(a)/sizeof(a[0])-1; //Find order of a coefficients
-unsigned const int N = sizeof(b)/sizeof(b[0])-1; //Find order of b coefficients
+double y[N] = {0};
 
 /******************************* Global declarations ********************************/
 
@@ -75,12 +72,8 @@ DSK6713_AIC23_CodecHandle H_Codec;
 void init_hardware(void);     
 void init_HWI(void);  
 void ISR_AIC (void);    
-void shift_sample(double sample_in);
-void direct_1_iir(void);  
 /********************************** Main routine ************************************/
-void main(){
-	x = (double *)calloc(N+1,sizeof(double));
-	y = (double *)calloc(M+1,sizeof(double));
+void main(){	
     // initialize board and the audio port
     init_hardware();
     /* initialize hardware interrupts */
@@ -131,7 +124,7 @@ void ISR_AIC(void){
 	int index;
 	x[0] = (double)mono_read_16Bit();
 	y[0] = b[0]*x[0];
-	for (index = N; index>1; index --) {
+	for (index = N-1; index>1; index --) {
 		y[0] += x[index]*b[index] - y[index]*a[index];
 		y[index] = y[index-1];
 		x[index] = x[index-1];
