@@ -9,8 +9,8 @@ void ISR_AIC(void){
 		y[index] = y[index-1];
 		x[index] = x[index-1];
 	}
-	y[0] += x[1]*b[1] - y[1]*a*[1];
-	mono_write_16BIT((Int16)y[0]);
+	y[0] += x[1]*b[1] - y[1]*a[1];
+	mono_write_16Bit((Int16)y[0]);
 	x[1] = x[0];
 	y[1] = y[0];
 }
