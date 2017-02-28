@@ -6,7 +6,7 @@ void ISR_AIC(void){
 	w[0] = (double)mono_read_16Bit();
 	y = b[0]*w[0] + w[1];
 	mono_write_16Bit((Int16)y);
-	for (index = 1, index < N; index ++){
+	for (index = N - 1; index >0; index --){
 		w[index] = b[index]*w[0] - a[index]*y + w[index+1];
 	}
 	w[N] = b[N]*w[0] - a[N]*y;
