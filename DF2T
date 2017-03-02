@@ -126,11 +126,11 @@ void ISR_AIC(void){
 	//w[index] is the memory array N is 5 for fourth order filter
 	int index = 0;
 	double y = 0;
-	double x = (double)mono_read_16Bit();
-	y = b[0]*x + w[1];
+	w[0] = (double)mono_read_16Bit();
+	y = b[0]*w[0] + w[1];
 	mono_write_16Bit((Int16)y);
 	for (index = 1; index < N-1; index ++){
-		w[index] = b[index]*x - a[index]*y + w[index+1];
+		w[index] = b[index]*w[0] - a[index]*y + w[index+1];
 	}
-	w[N-1] = b[N-1]*x - a[N-1]*y;
+	w[N-1] = b[N-1]*w[0] - a[N-1]*y;
 }
