@@ -124,13 +124,12 @@ void ISR_AIC(void){
 	//w[index] is the memory array, N = 5
 	int index = 0;
 	double y = 0;
-	double x_0 = (double)mono_read_16Bit();
+	w[0] = (double)mono_read_16Bit();
 	for (index = N-1; index > 0; index --){
 		x_0 -= a[index]*w[index];
 		y   += b[index]*w[index];
 		w[index] = w[index-1];
 	}	
-	w[1] = x_0;
-	y += x_0*b[0];
+	y += w[0]*b[0];
 	mono_write_16Bit((Int16)y);
 }
