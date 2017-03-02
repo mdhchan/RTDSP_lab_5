@@ -126,7 +126,7 @@ void ISR_AIC(void){
 	double y = 0;
 	w[0] = (double)mono_read_16Bit();
 	for (index = N-1; index > 0; index --){
-		x_0 -= a[index]*w[index];
+		w[0] -= a[index]*w[index];
 		y   += b[index]*w[index];
 		w[index] = w[index-1];
 	}	
