@@ -128,7 +128,7 @@ void ISR_AIC(void){
 	//x[index], y[index] are the memory arrays, with two indexes running
 	int index;
 	double xin = (double)mono_read_16Bit();
-	doubble yout = b[0]*x[0];
+	doubble yout = b[0]*xin;
 	for (index = N-1; index>0; index --) {
 		yout += x[index]*b[index] - y[index]*a[index];
 		y[index] = y[index-1];
