@@ -72,7 +72,7 @@ DSK6713_AIC23_CodecHandle H_Codec;
 void init_hardware(void);     
 void init_HWI(void);  
 void ISR_AIC (void);
-Int16 IIR_DFI(Int16 sample);
+Int16 IIR_DFII(Int16 sample);
 /********************************** Main routine ************************************/
 void main(){
 	w = (double *)calloc(N,sizeof(double));
