@@ -132,7 +132,7 @@ void ISR_AIC(void){
 Int16 IIR_DFI(Int16 sample){
 	int index;
 	double xin = (double)sample;
-	doubble yout = b[0]*xin;
+	double yout = b[0]*xin;
 	for (index = N-1; index>0; index --) {
 		yout += x[index]*b[index] - y[index]*a[index];
 		y[index] = y[index-1];
