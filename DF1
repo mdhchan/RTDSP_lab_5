@@ -127,12 +127,14 @@ void ISR_AIC(void){
 	//implements IIR Filter direct form 1
 	//x[index], y[index] are the memory arrays, with two indexes running
 	int index;
-	x[0] = (double)mono_read_16Bit();
-	y[0] = b[0]*x[0];
+	double xin = (double)mono_read_16Bit();
+	doubble yout = b[0]*x[0];
 	for (index = N-1; index>0; index --) {
-		y[0] += x[index]*b[index] - y[index]*a[index];
+		yout += x[index]*b[index] - y[index]*a[index];
 		y[index] = y[index-1];
 		x[index] = x[index-1];
 	}
-	mono_write_16Bit((Int16)y[0]);	
+	y[1] = yout;
+	x[1] = xin;
+	mono_write_16Bit((Int16)yout);	
 }
