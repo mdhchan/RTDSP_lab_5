@@ -35,7 +35,7 @@
 #include <math.h>
 // Some functions to help with writing/reading the audio ports when using interrupts.
 #include <helper_functions_ISR.h>
-// include the FIR coefficients from MATLAB, N is defined in the text file
+// include the IIR coefficients from MATLAB
 #include "IIR_coeff_4.txt"
 
 // declare pointer to array of input values and M-1 past inputs
