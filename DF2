@@ -136,5 +136,5 @@ Int16 IIR_DFII (Int16 sample){
 		w[index] = w[index-1];
 	}	
 	y += w[0]*b[0];
-	return (Int16)yout;
+	return (Int16)y;
 }
