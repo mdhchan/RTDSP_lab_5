@@ -121,7 +121,7 @@ void init_HWI(void)
 
 /******************** WRITE YOUR INTERRUPT SERVICE ROUTINE HERE***********************/  
 void ISR_AIC(void){
-	mono_write_16Bit(IIR_DFI(mono_read_16Bit()));
+	mono_write_16Bit(IIR_DFII(mono_read_16Bit()));
 }
 
 Int16 IIR_DFII (Int16 sample){
