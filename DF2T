@@ -72,8 +72,7 @@ DSK6713_AIC23_CodecHandle H_Codec;
 void init_hardware(void);     
 void init_HWI(void);  
 void ISR_AIC (void);    
-void shift_sample(double sample_in);
-void direct_1_iir(void);  
+Int16 IIR_DFIIT(Int16 sample);
 /********************************** Main routine ************************************/
 void main(){
 	w = (double *)calloc(N,sizeof(double));
@@ -122,15 +121,20 @@ void init_HWI(void)
 
 /******************** WRITE YOUR INTERRUPT SERVICE ROUTINE HERE***********************/  
 void ISR_AIC(void){
+	mono_write_16Bit(IIR_DFI(mono_read_16Bit()));
+}
+
+Int16 IIR_DFIIT (Int16 sample){
 	//implements IIR Filter direct form 2 transposed with single buffer
 	//w[index] is the memory array N is 5 for fourth order filter
 	int index = 0;
 	double y = 0;
-	w[0] = (double)mono_read_16Bit();
+	w[0] = (double)sample;
 	y = b[0]*w[0] + w[1];
 	mono_write_16Bit((Int16)y);
 	for (index = 1; index < N-1; index ++){
 		w[index] = b[index]*w[0] - a[index]*y + w[index+1];
 	}
 	w[N-1] = b[N-1]*w[0] - a[N-1]*y;
+	return y;
 }
